@@ -1,0 +1,8 @@
+node_modules
+dist
+dist-webview
+*.vsix
+.vscode-test
+.omp
+.DS_Store
+Thumbs.db

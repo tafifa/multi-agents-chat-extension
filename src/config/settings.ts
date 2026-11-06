@@ -1,25 +1,30 @@
 import * as vscode from 'vscode';
 import { HarnessId, HARNESS_DEFINITIONS } from '../terminal/harness';
 
-export interface CliAgentsSettings {
+export interface MultiAgentChatSettings {
   harness: HarnessId;
   fontSize: number;
   fontFamily: string;
   harnessPaths: Record<HarnessId, string>;
 }
 
-export function getOmpSettings(): CliAgentsSettings {
-  const config = vscode.workspace.getConfiguration('cliAgents');
+export function getOmpSettings(): MultiAgentChatSettings {
+  const config = vscode.workspace.getConfiguration('multiAgentChat');
   const configuredHarness = config.get<string>('harness', 'omp') as HarnessId;
   const validHarness: HarnessId = HARNESS_DEFINITIONS[configuredHarness] ? configuredHarness : 'omp';
 
-  // Fallback to legacy omp config if available
+  // Fallback to legacy omp or cliAgents config if available
   const legacyOmpConfig = vscode.workspace.getConfiguration('omp');
-  const ompLegacyPath = (legacyOmpConfig?.get<string>('executablePath', '') || '').trim();
+  const legacyCliConfig = vscode.workspace.getConfiguration('cliAgents');
+  const legacyPath = (
+    legacyOmpConfig?.get<string>('executablePath', '') ||
+    legacyCliConfig?.get<string>('executablePath', '') ||
+    ''
+  ).trim();
 
   const harnessesConfig = config.get<Record<string, { path?: string }>>('harnesses', {});
 
-  const ompPath = harnessesConfig.omp?.path?.trim() || ompLegacyPath;
+  const ompPath = harnessesConfig.omp?.path?.trim() || legacyPath;
   const opencodePath = harnessesConfig.opencode?.path?.trim() || '';
 
   return {
@@ -34,7 +39,7 @@ export function getOmpSettings(): CliAgentsSettings {
 }
 
 export async function setConfiguredHarness(harnessId: HarnessId): Promise<void> {
-  const config = vscode.workspace.getConfiguration('cliAgents');
+  const config = vscode.workspace.getConfiguration('multiAgentChat');
   await config.update('harness', harnessId, vscode.ConfigurationTarget.Global);
 }
 

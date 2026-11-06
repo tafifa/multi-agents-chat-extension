@@ -4,7 +4,7 @@ import { getOmpSettings, setConfiguredHarness } from '../config/settings';
 import { HarnessId, HARNESS_DEFINITIONS } from '../terminal/harness';
 
 export class OmpTerminalViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'cliAgents.terminalView';
+  public static readonly viewType = 'multiAgentChat.terminalView';
   private _view?: vscode.WebviewView;
   private currentCols = 80;
   private currentRows = 24;
@@ -140,7 +140,7 @@ export class OmpTerminalViewProvider implements vscode.WebviewViewProvider {
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="${styleUri}" rel="stylesheet">
-  <title>CLI Agents</title>
+  <title>Multi-Agent Chat</title>
 </head>
 <body>
   <div id="terminal-container"></div>

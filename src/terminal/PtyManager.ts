@@ -51,7 +51,7 @@ export class PtyManager {
     env['TERM'] = 'xterm-256color';
 
     // Beri info harness yang sedang dijalankan
-    const banner = `\r\n\x1b[1;36m[CLI Agents]\x1b[0m Menjalankan harness: \x1b[1;32m${harnessDef.name}\x1b[0m (${harnessDef.command})\r\n\r\n`;
+    const banner = `\r\n\x1b[1;36m[Multi-Agent Chat]\x1b[0m Menjalankan agent: \x1b[1;32m${harnessDef.name}\x1b[0m (${harnessDef.command})\r\n\r\n`;
     this.historyBuffer.push(banner);
     if (this.onDataCallback) {
       this.onDataCallback(banner);
@@ -85,7 +85,7 @@ export class PtyManager {
         }
       });
     } catch (err: any) {
-      const errorMessage = `\r\n\x1b[31m[CLI Agents Error] Gagal menjalankan ${harnessDef.name}: ${err.message}\x1b[0m\r\n`;
+      const errorMessage = `\r\n\x1b[31m[Multi-Agent Chat Error] Gagal menjalankan ${harnessDef.name}: ${err.message}\x1b[0m\r\n`;
       this.historyBuffer.push(errorMessage);
       if (this.onDataCallback) {
         this.onDataCallback(errorMessage);

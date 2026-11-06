@@ -1,7 +1,7 @@
 {
-  "name": "cli-agents",
-  "displayName": "CLI Agents",
-  "description": "Embedded AI CLI Agents terminal in VS Code Secondary Side Bar (OMP Code, OpenCode, etc.)",
+  "name": "multi-agent-chat",
+  "displayName": "Multi-Agent Chat",
+  "description": "Embedded Multi-Agent Chat & CLI terminal in VS Code Secondary Side Bar (OMP Code, OpenCode, etc.)",
   "version": "0.1.0",
   "engines": {
     "vscode": "^1.90.0"
@@ -10,72 +10,72 @@
     "Other"
   ],
   "activationEvents": [
-    "onView:cliAgents.terminalView"
+    "onView:multiAgentChat.terminalView"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "cli-agents-container",
-          "title": "CLI Agents",
+          "id": "multi-agent-chat-container",
+          "title": "Multi-Agent Chat",
           "icon": "resources/icon.svg"
         }
       ]
     },
     "views": {
-      "cli-agents-container": [
+      "multi-agent-chat-container": [
         {
           "type": "webview",
-          "id": "cliAgents.terminalView",
-          "name": "CLI Agents"
+          "id": "multiAgentChat.terminalView",
+          "name": "Multi-Agent Chat"
         }
       ]
     },
     "commands": [
       {
-        "command": "cliAgents.openTerminal",
-        "title": "CLI Agents: Focus Terminal"
+        "command": "multiAgentChat.openTerminal",
+        "title": "Multi-Agent Chat: Focus Terminal"
       },
       {
-        "command": "cliAgents.switchHarness",
-        "title": "CLI Agents: Switch Harness (OMP / OpenCode)",
+        "command": "multiAgentChat.switchHarness",
+        "title": "Multi-Agent Chat: Switch Agent (OMP / OpenCode)",
         "icon": "$(arrow-swap)"
       },
       {
-        "command": "cliAgents.restartTerminal",
-        "title": "CLI Agents: Restart Session",
+        "command": "multiAgentChat.restartTerminal",
+        "title": "Multi-Agent Chat: Restart Session",
         "icon": "$(refresh)"
       },
       {
-        "command": "cliAgents.killTerminal",
-        "title": "CLI Agents: Kill Session",
+        "command": "multiAgentChat.killTerminal",
+        "title": "Multi-Agent Chat: Kill Session",
         "icon": "$(stop-circle)"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "cliAgents.switchHarness",
-          "when": "view == cliAgents.terminalView",
+          "command": "multiAgentChat.switchHarness",
+          "when": "view == multiAgentChat.terminalView",
           "group": "navigation@0"
         },
         {
-          "command": "cliAgents.restartTerminal",
-          "when": "view == cliAgents.terminalView",
+          "command": "multiAgentChat.restartTerminal",
+          "when": "view == multiAgentChat.terminalView",
           "group": "navigation@1"
         },
         {
-          "command": "cliAgents.killTerminal",
-          "when": "view == cliAgents.terminalView",
+          "command": "multiAgentChat.killTerminal",
+          "when": "view == multiAgentChat.terminalView",
           "group": "navigation@2"
         }
       ]
     },
     "configuration": {
-      "title": "CLI Agents",
+      "title": "Multi-Agent Chat",
       "properties": {
-        "cliAgents.harness": {
+        "multiAgentChat.harness": {
           "type": "string",
           "enum": ["omp", "opencode"],
           "enumDescriptions": [
@@ -83,9 +83,9 @@
             "OpenCode AI Terminal Agent"
           ],
           "default": "omp",
-          "description": "Active AI Agent CLI harness"
+          "description": "Active AI Agent harness"
         },
-        "cliAgents.harnesses": {
+        "multiAgentChat.harnesses": {
           "type": "object",
           "default": {
             "omp": { "path": "" },
@@ -93,12 +93,12 @@
           },
           "description": "Custom binary paths for each harness"
         },
-        "cliAgents.fontSize": {
+        "multiAgentChat.fontSize": {
           "type": "number",
           "default": 13,
           "description": "Terminal font size in pixels"
         },
-        "cliAgents.fontFamily": {
+        "multiAgentChat.fontFamily": {
           "type": "string",
           "default": "Consolas, 'Courier New', monospace",
           "description": "Terminal font family"

@@ -38,8 +38,8 @@ export function activate(context: vscode.ExtensionContext) {
   // Pantau perubahan konfigurasi
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('cliAgents')) {
-        vscode.window.showInformationMessage('Konfigurasi CLI Agents diperbarui. Silakan restart terminal jika diperlukan.');
+      if (e.affectsConfiguration('multiAgentChat')) {
+        vscode.window.showInformationMessage('Konfigurasi Multi-Agent Chat diperbarui. Silakan restart session jika diperlukan.');
       }
     })
   );

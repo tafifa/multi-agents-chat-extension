@@ -7,7 +7,7 @@ interface HarnessQuickPickItem extends vscode.QuickPickItem {
 }
 
 export function registerSwitchHarnessCommand(provider: OmpTerminalViewProvider): vscode.Disposable {
-  return vscode.commands.registerCommand('cliAgents.switchHarness', async () => {
+  return vscode.commands.registerCommand('multiAgentChat.switchHarness', async () => {
     const currentHarness = provider.getActiveHarness();
 
     const items: HarnessQuickPickItem[] = (
@@ -24,7 +24,7 @@ export function registerSwitchHarnessCommand(provider: OmpTerminalViewProvider):
     });
 
     const selected = await vscode.window.showQuickPick(items, {
-      placeHolder: 'Pilih AI Agent Harness untuk Terminal Sidebar'
+      placeHolder: 'Pilih AI Agent untuk Multi-Agent Chat'
     });
 
     if (!selected) {

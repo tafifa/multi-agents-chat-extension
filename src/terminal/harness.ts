@@ -1,17 +1,16 @@
 import * as fs from 'fs';
 
-export type HarnessId = 'omp' | 'opencode';
-
 export interface AgentHarness {
-  id: HarnessId;
+  id: string;
   name: string;
   command: string;
   args: string[];
   description: string;
   icon: string;
+  isCustom?: boolean;
 }
 
-export const HARNESS_DEFINITIONS: Record<HarnessId, AgentHarness> = {
+export const BUILTIN_HARNESSES: Record<string, AgentHarness> = {
   omp: {
     id: 'omp',
     name: 'OMP Code',
@@ -27,8 +26,39 @@ export const HARNESS_DEFINITIONS: Record<HarnessId, AgentHarness> = {
     args: [],
     description: 'OpenCode AI Terminal Agent',
     icon: '$(terminal)'
+  },
+  hermes: {
+    id: 'hermes',
+    name: 'Hermes',
+    command: 'hermes',
+    args: [],
+    description: 'Hermes AI Coding Agent',
+    icon: '$(rocket)'
+  },
+  cline: {
+    id: 'cline',
+    name: 'Cline',
+    command: 'cline',
+    args: [],
+    description: 'Cline CLI Coding Agent',
+    icon: '$(robot)'
   }
 };
+
+export function getAllHarnesses(customAgents: AgentHarness[] = []): Record<string, AgentHarness> {
+  const result: Record<string, AgentHarness> = { ...BUILTIN_HARNESSES };
+  for (const agent of customAgents) {
+    if (agent && agent.id) {
+      result[agent.id] = {
+        ...agent,
+        args: agent.args || [],
+        icon: agent.icon || '$(tools)',
+        isCustom: true
+      };
+    }
+  }
+  return result;
+}
 
 export function resolveExecutableForHarness(
   harness: AgentHarness,

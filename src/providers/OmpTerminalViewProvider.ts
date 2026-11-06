@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { PtyManager } from '../terminal/PtyManager';
 import { getOmpSettings, setConfiguredHarness } from '../config/settings';
-import { HarnessId, HARNESS_DEFINITIONS } from '../terminal/harness';
+import { getAllHarnesses } from '../terminal/harness';
 
 export class OmpTerminalViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'multiAgentChat.terminalView';
@@ -30,17 +30,18 @@ export class OmpTerminalViewProvider implements vscode.WebviewViewProvider {
     });
   }
 
-  public getActiveHarness(): HarnessId {
+  public getActiveHarness(): string {
     return this._ptyManager.getActiveHarness();
   }
 
-  public async switchHarness(harnessId: HarnessId, saveAsDefault = false): Promise<void> {
-    if (saveAsDefault) {
-      await setConfiguredHarness(harnessId);
-    }
+  public async switchHarness(harnessId: string): Promise<void> {
+    await setConfiguredHarness(harnessId);
+
+    const settings = getOmpSettings();
+    const all = getAllHarnesses(settings.customAgents);
 
     if (this._view) {
-      this._view.description = HARNESS_DEFINITIONS[harnessId]?.name || harnessId;
+      this._view.description = all[harnessId]?.name || harnessId;
       this._view.webview.postMessage({ type: 'clear' });
     }
 
@@ -73,7 +74,8 @@ export class OmpTerminalViewProvider implements vscode.WebviewViewProvider {
           });
 
           if (!this._ptyManager.isAlive()) {
-            this._ptyManager.spawn(this.currentCols, this.currentRows, settings.harness);
+            const targetHarness = this._ptyManager.getActiveHarness() || settings.harness;
+            this._ptyManager.spawn(this.currentCols, this.currentRows, targetHarness);
             this._view!.description = this._ptyManager.getActiveHarnessName();
           } else {
             // Replay history jika webview baru dirender ulang

@@ -1,6 +1,6 @@
 import * as pty from 'node-pty';
 import { getOmpSettings, getWorkspaceCwd } from '../config/settings';
-import { HarnessId, HARNESS_DEFINITIONS, resolveExecutableForHarness } from './harness';
+import { AgentHarness, getAllHarnesses, resolveExecutableForHarness } from './harness';
 
 export class PtyManager {
   private ptyProcess?: pty.IPty;
@@ -8,18 +8,20 @@ export class PtyManager {
   private onExitCallback?: (exitCode: number) => void;
   private historyBuffer: string[] = [];
   private maxHistoryChunks = 200; // Simpan potongan riwayat untuk Webview reload
-  private currentHarnessId: HarnessId = 'omp';
+  private currentHarnessId: string = 'omp';
 
   public isAlive(): boolean {
     return !!this.ptyProcess;
   }
 
-  public getActiveHarness(): HarnessId {
+  public getActiveHarness(): string {
     return this.currentHarnessId;
   }
 
   public getActiveHarnessName(): string {
-    return HARNESS_DEFINITIONS[this.currentHarnessId]?.name || 'Unknown';
+    const settings = getOmpSettings();
+    const all = getAllHarnesses(settings.customAgents);
+    return all[this.currentHarnessId]?.name || this.currentHarnessId;
   }
 
   public setOnData(callback: (data: string) => void) {
@@ -30,18 +32,24 @@ export class PtyManager {
     this.onExitCallback = callback;
   }
 
-  public spawn(cols = 80, rows = 24, targetHarness?: HarnessId): void {
+  public spawn(cols = 80, rows = 24, targetHarness?: string): void {
     if (this.ptyProcess) {
       this.kill();
     }
 
     this.historyBuffer = [];
     const settings = getOmpSettings();
-    const harnessId = targetHarness || settings.harness;
-    this.currentHarnessId = harnessId;
+    const allHarnesses = getAllHarnesses(settings.customAgents);
 
-    const harnessDef = HARNESS_DEFINITIONS[harnessId] || HARNESS_DEFINITIONS.omp;
-    const customPath = settings.harnessPaths[harnessId];
+    // Prioritaskan targetHarness jika ada, lalu currentHarnessId jika valid, baru settings.harness
+    const chosenHarnessId =
+      targetHarness ||
+      (allHarnesses[this.currentHarnessId] ? this.currentHarnessId : settings.harness);
+
+    this.currentHarnessId = allHarnesses[chosenHarnessId] ? chosenHarnessId : 'omp';
+
+    const harnessDef = allHarnesses[this.currentHarnessId] || allHarnesses.omp;
+    const customPath = settings.harnessPaths[this.currentHarnessId];
     const { shell, args } = resolveExecutableForHarness(harnessDef, customPath);
     const cwd = getWorkspaceCwd();
 
@@ -50,7 +58,7 @@ export class PtyManager {
     env['COLORTERM'] = 'truecolor';
     env['TERM'] = 'xterm-256color';
 
-    // Beri info harness yang sedang dijalankan
+    // Beri info agent yang sedang dijalankan
     const banner = `\r\n\x1b[1;36m[Multi-Agent Chat]\x1b[0m Menjalankan agent: \x1b[1;32m${harnessDef.name}\x1b[0m (${harnessDef.command})\r\n\r\n`;
     this.historyBuffer.push(banner);
     if (this.onDataCallback) {
@@ -80,6 +88,15 @@ export class PtyManager {
 
       this.ptyProcess.onExit(({ exitCode }) => {
         this.ptyProcess = undefined;
+
+        if (exitCode !== 0) {
+          const hint = `\r\n\x1b[33m[Tip]\x1b[0m Pastikan perintah '\x1b[1m${harnessDef.command}\x1b[0m' sudah terinstal dan ada di PATH sistem, atau tentukan path binary di setting 'multiAgentChat.harnesses'.\r\n`;
+          this.historyBuffer.push(hint);
+          if (this.onDataCallback) {
+            this.onDataCallback(hint);
+          }
+        }
+
         if (this.onExitCallback) {
           this.onExitCallback(exitCode);
         }
@@ -124,8 +141,8 @@ export class PtyManager {
     }
   }
 
-  public restart(cols = 80, rows = 24, targetHarness?: HarnessId) {
+  public restart(cols = 80, rows = 24, targetHarness?: string) {
     this.kill();
-    this.spawn(cols, rows, targetHarness);
+    this.spawn(cols, rows, targetHarness || this.currentHarnessId);
   }
 }

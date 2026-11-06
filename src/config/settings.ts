@@ -1,17 +1,21 @@
 import * as vscode from 'vscode';
-import { HarnessId, HARNESS_DEFINITIONS } from '../terminal/harness';
+import { AgentHarness, getAllHarnesses } from '../terminal/harness';
 
 export interface MultiAgentChatSettings {
-  harness: HarnessId;
+  harness: string;
   fontSize: number;
   fontFamily: string;
-  harnessPaths: Record<HarnessId, string>;
+  harnessPaths: Record<string, string>;
+  customAgents: AgentHarness[];
 }
 
 export function getOmpSettings(): MultiAgentChatSettings {
   const config = vscode.workspace.getConfiguration('multiAgentChat');
-  const configuredHarness = config.get<string>('harness', 'omp') as HarnessId;
-  const validHarness: HarnessId = HARNESS_DEFINITIONS[configuredHarness] ? configuredHarness : 'omp';
+  const customAgents = config.get<AgentHarness[]>('customAgents', []);
+  const allHarnesses = getAllHarnesses(customAgents);
+
+  const configuredHarness = config.get<string>('harness', 'omp');
+  const validHarness = allHarnesses[configuredHarness] ? configuredHarness : 'omp';
 
   // Fallback to legacy omp or cliAgents config if available
   const legacyOmpConfig = vscode.workspace.getConfiguration('omp');
@@ -23,24 +27,43 @@ export function getOmpSettings(): MultiAgentChatSettings {
   ).trim();
 
   const harnessesConfig = config.get<Record<string, { path?: string }>>('harnesses', {});
+  const harnessPaths: Record<string, string> = {};
 
-  const ompPath = harnessesConfig.omp?.path?.trim() || legacyPath;
-  const opencodePath = harnessesConfig.opencode?.path?.trim() || '';
+  // Map known paths
+  for (const id of Object.keys(allHarnesses)) {
+    harnessPaths[id] = harnessesConfig[id]?.path?.trim() || '';
+  }
+  if (!harnessPaths['omp'] && legacyPath) {
+    harnessPaths['omp'] = legacyPath;
+  }
 
   return {
     harness: validHarness,
     fontSize: config.get<number>('fontSize', 13),
     fontFamily: config.get<string>('fontFamily', "Consolas, 'Courier New', monospace"),
-    harnessPaths: {
-      omp: ompPath,
-      opencode: opencodePath
-    }
+    harnessPaths,
+    customAgents
   };
 }
 
-export async function setConfiguredHarness(harnessId: HarnessId): Promise<void> {
+export async function setConfiguredHarness(harnessId: string): Promise<void> {
   const config = vscode.workspace.getConfiguration('multiAgentChat');
   await config.update('harness', harnessId, vscode.ConfigurationTarget.Global);
+}
+
+export async function addCustomAgent(agent: AgentHarness): Promise<void> {
+  const config = vscode.workspace.getConfiguration('multiAgentChat');
+  const current = config.get<AgentHarness[]>('customAgents', []);
+  const filtered = current.filter((a) => a.id !== agent.id);
+  filtered.push(agent);
+  await config.update('customAgents', filtered, vscode.ConfigurationTarget.Global);
+}
+
+export async function removeCustomAgent(agentId: string): Promise<void> {
+  const config = vscode.workspace.getConfiguration('multiAgentChat');
+  const current = config.get<AgentHarness[]>('customAgents', []);
+  const filtered = current.filter((a) => a.id !== agentId);
+  await config.update('customAgents', filtered, vscode.ConfigurationTarget.Global);
 }
 
 export function getWorkspaceCwd(): string {

@@ -5,6 +5,7 @@ import { registerOpenTerminalCommand } from './commands/openTerminal';
 import { registerRestartOmpCommand } from './commands/restartOmp';
 import { registerKillOmpCommand } from './commands/killOmp';
 import { registerSwitchHarnessCommand } from './commands/switchHarness';
+import { registerAddAgentCommand } from './commands/addAgent';
 
 let ptyManager: PtyManager | undefined;
 
@@ -32,7 +33,8 @@ export function activate(context: vscode.ExtensionContext) {
     registerOpenTerminalCommand(provider),
     registerRestartOmpCommand(provider),
     registerKillOmpCommand(provider),
-    registerSwitchHarnessCommand(provider)
+    registerSwitchHarnessCommand(provider),
+    registerAddAgentCommand()
   );
 
   // Pantau perubahan konfigurasi

@@ -1,7 +1,7 @@
 {
   "name": "multi-agent-chat",
   "displayName": "Multi-Agent Chat",
-  "description": "Embedded Multi-Agent Chat & CLI terminal in VS Code Secondary Side Bar (OMP Code, OpenCode, etc.)",
+  "description": "Embedded Multi-Agent Chat & CLI terminal in VS Code Secondary Side Bar (OMP Code, OpenCode, Hermes, Cline, etc.)",
   "version": "0.1.0",
   "engines": {
     "vscode": "^1.90.0"
@@ -38,8 +38,13 @@
         "title": "Multi-Agent Chat: Focus Terminal"
       },
       {
+        "command": "multiAgentChat.addAgent",
+        "title": "Multi-Agent Chat: Add New Agent",
+        "icon": "$(add)"
+      },
+      {
         "command": "multiAgentChat.switchHarness",
-        "title": "Multi-Agent Chat: Switch Agent (OMP / OpenCode)",
+        "title": "Multi-Agent Chat: Switch Agent",
         "icon": "$(arrow-swap)"
       },
       {
@@ -56,19 +61,24 @@
     "menus": {
       "view/title": [
         {
-          "command": "multiAgentChat.switchHarness",
+          "command": "multiAgentChat.addAgent",
           "when": "view == multiAgentChat.terminalView",
           "group": "navigation@0"
         },
         {
-          "command": "multiAgentChat.restartTerminal",
+          "command": "multiAgentChat.switchHarness",
           "when": "view == multiAgentChat.terminalView",
           "group": "navigation@1"
         },
         {
-          "command": "multiAgentChat.killTerminal",
+          "command": "multiAgentChat.restartTerminal",
           "when": "view == multiAgentChat.terminalView",
           "group": "navigation@2"
+        },
+        {
+          "command": "multiAgentChat.killTerminal",
+          "when": "view == multiAgentChat.terminalView",
+          "group": "navigation@3"
         }
       ]
     },
@@ -77,21 +87,34 @@
       "properties": {
         "multiAgentChat.harness": {
           "type": "string",
-          "enum": ["omp", "opencode"],
-          "enumDescriptions": [
-            "OhMyPi Agent CLI (Default)",
-            "OpenCode AI Terminal Agent"
-          ],
           "default": "omp",
-          "description": "Active AI Agent harness"
+          "description": "Active AI Agent ID (e.g. omp, opencode, hermes, cline, or custom agent)"
+        },
+        "multiAgentChat.customAgents": {
+          "type": "array",
+          "default": [],
+          "description": "Custom registered AI CLI Agents",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "command": { "type": "string" },
+              "args": { "type": "array", "items": { "type": "string" } },
+              "description": { "type": "string" }
+            },
+            "required": ["id", "name", "command"]
+          }
         },
         "multiAgentChat.harnesses": {
           "type": "object",
           "default": {
             "omp": { "path": "" },
-            "opencode": { "path": "" }
+            "opencode": { "path": "" },
+            "hermes": { "path": "" },
+            "cline": { "path": "" }
           },
-          "description": "Custom binary paths for each harness"
+          "description": "Custom binary paths for each harness/agent"
         },
         "multiAgentChat.fontSize": {
           "type": "number",
